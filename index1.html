@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div>
+        <label>
+            Token
+            <textarea name="jwt" id="jwt" type="text" placeholder="JWT"></textarea>
+        </label>
+        <label>
+            Refresh Token
+            <textarea name="refresh_token" id="refresh_token" type="text" placeholder="Refresh Token"></textarea>
+        </label>
+        <button onclick='requestInAPI()'>Requisição API</button>
+        <br />
+        <br />
+        <input type="text" placeholder="Digite o usuário" name="username" id="username" />
+        <input type="password" placeholder="Digite a senha" name="password" id="password" />
+        <button onclick='generationToken()'>Token</button>
+        <br />
+        <br />
+        <button onclick='renewToken()'>Novo Token</button>
+        <br />
+        <br />
+        <button onclick='validadeToken()'>Validar Token</button>
+        <br />
+        <br />
+        <button onclick='logout()'>Sair</button>
+    </div>
+
+    <div>
+        <a tabindex="5" target="_blank"
+            href="http://srvlit.local:88/auth/realms/master/login-actions/reset-credentials?client_id=security-admin-console&amp;tab_id=LbxEhV1hvXg">
+            Esqueceu sua senha?
+        </a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+        integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+
+    <script>
+
+        var attemps = 0;
+
+        function requestInAPI() {
+
+            token = document.getElementById("jwt"); //token = $("#jwt").val();
+
+            const options = {
+                method: "GET",
+                headers: { "Authorization": "Bearer " + token.value }
+            };
+
+            fetch("http://localhost:8080/students", options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // do something with the data
+                    alert(data);
+                })
+                .catch(error => {
+                    // handle error
+                    alert(error);
+                });
+
+        }
+
+        function generationToken() {
+
+            username = document.getElementById("username"); //$("#username").val();
+            password = document.getElementById("password"); //$("#password").val();
+
+            const data = {
+                grant_type: "password",
+                username: username.value,
+                password: password.value,
+                client_id: "teste-springboot",
+                client_secret: "f9z5ygCyrf85GL3li1tx6PB2aWxssp2m"
+            };
+
+            const options = {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(data)
+            };
+
+            fetch("http://srvlit.local:88/auth/realms/master/protocol/openid-connect/token", options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // do something with the data
+                    $("#refresh_token").val(data.refresh_token);
+                    setToken(data.access_token, data.refresh_token)
+                    attemps = 0;
+                    getToken();
+                })
+                .catch(error => {
+                    // handle error
+                    if (attemps >= 10) {
+                        alert('Espere 1 min até tentar de novo')
+                        console.log('Espere 1 min até tentar de novo')
+                    } else {
+                        console.log(attemps + 1, ' tentativas')
+                    }
+                    attemps++;
+                });
+
+        }
+
+        function logout() {
+
+            const data = {
+                client_id: "teste-springboot",
+                client_secret: "f9z5ygCyrf85GL3li1tx6PB2aWxssp2m",
+                refresh_token: $("#refresh_token").val()
+            };
+
+            const options = {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + $("#jwt").val(), "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(data)
+            };
+
+            fetch("http://srvlit.local:88/auth/realms/master/protocol/openid-connect/logout", options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response;
+                })
+                .then(data => {
+                    alert('BYE')
+                    localStorage.clear();
+                    location.reload()
+                })
+                .catch(error => {
+                    console.log(error)
+                });
+
+        }
+
+        function validadeToken() {
+            const token = $("#jwt").val();
+
+            fetch('http://srvlit.local:88/auth/realms/master/protocol/openid-connect/userinfo', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Não foi possível verificar a validade do token');
+                }
+                return response.json();
+            }).then(data => {
+                console.log('Token válido:', data);
+            }).catch(error => {
+                console.error('Erro:', error);
+            });
+
+        }
+
+        function renewToken() {
+            const data = {
+                grant_type: 'refresh_token',
+                client_id: "teste-springboot",
+                client_secret: "f9z5ygCyrf85GL3li1tx6PB2aWxssp2m",
+                refresh_token: $("#refresh_token").val()
+            };
+
+            const options = {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + $("#jwt").val(), "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(data)
+            };
+
+            fetch("http://srvlit.local:88/auth/realms/master/protocol/openid-connect/token", options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    setToken(data.access_token, data.refresh_token)
+                    getToken();
+                })
+                .catch(error => {
+                    console.log(error)
+                });
+        }
+
+        function setToken(access_token, refresh_token) {
+            const ACCESS_TOKEN_KEY = "access_token";
+            const REFRESH_TOKEN_KEY = "refresh_token";
+
+            localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
+            localStorage.setItem(REFRESH_TOKEN_KEY, refresh_token);
+        }
+
+        function getToken() {
+            const ACCESS_TOKEN_KEY = "access_token";
+            const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+            const REFRESH_TOKEN_KEY = "refresh_token";
+            const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+            $("#jwt").val(accessToken)
+            $("#refresh_token").val(refreshToken)
+
+        }
+
+        window.onload = (event) => {
+            getToken();
+        };
+
+    </script>
+
+</body>
+
+</html>
