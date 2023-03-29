@@ -11,7 +11,14 @@
 <body>
 
     <div>
-        <textarea name="jwt" id="jwt" type="text" placeholder="JWT"></textarea>
+        <label>
+            Token
+            <textarea name="jwt" id="jwt" type="text" placeholder="JWT"></textarea>
+        </label>
+        <label>
+            Refresh Token
+            <textarea name="refresh_token" id="refresh_token" type="text" placeholder="Refresh Token"></textarea>
+        </label>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"
@@ -20,7 +27,10 @@
         function getToken() {
             const ACCESS_TOKEN_KEY = "access_token";
             const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+            const REFRESH_TOKEN_KEY = "refresh_token";
+            const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
             $("#jwt").val(accessToken)
+            $("#refresh_token").val(refreshToken)
         }
         getToken();
     </script>
