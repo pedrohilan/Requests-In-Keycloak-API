@@ -35,12 +35,45 @@
         <br />
         <button onclick='logout()'>Sair</button>
     </div>
-
+    <br />
     <div>
         <a tabindex="5" target="_blank"
             href="http://srvlit.local:88/auth/realms/master/login-actions/reset-credentials?client_id=security-admin-console&amp;tab_id=LbxEhV1hvXg">
             Esqueceu sua senha?
         </a>
+    </div>
+    <br />
+
+    <div>
+        <input type="text" name="id" id="id" />
+        <button onclick='deleteUser()'>Excluir Usuário</button>
+    </div>
+
+    <br />
+    <br />
+    <hr>
+    <br />
+    <br />
+
+    <div>
+        <form>
+            <input type="text" name="newUsername" id="newUsername" placeholder="username" />
+            <br />
+            <br />
+            <input type="email" name="newEmail" id="newEmail" placeholder="newEmail" />
+            <br />
+            <br />
+            <input type="text" name="firstName" id="firstName" placeholder="firstName" />
+            <br />
+            <br />
+            <input type="text" name="lastName" id="lastName" placeholder="lastName" />
+            <br />
+            <br />
+            <input type="password" name="newPassword" id="newPassword" placeholder="newPassword" />
+            <br />
+            <br />
+            <button onclick='newUser()'>Criar</button>
+        </form>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"
@@ -73,6 +106,7 @@
                 .catch(error => {
                     // handle error
                     alert(error);
+                    console.log(error)
                 });
 
         }
@@ -232,9 +266,78 @@
         function decodeJWT(token) {
             var payload = token.split('.')[1]; //pegar a segunda parte do token
             var decoded = JSON.parse(window.atob(payload)); //atob decodifica uma string base64
-            alert(decoded.preferred_username+"\n"+decoded.email)
+            alert(decoded.preferred_username + "\n" + decoded.email)
         }
 
+        function newUser() {
+
+            event.preventDefault();
+
+            newUsername = document.getElementById("newUsername");
+            newPassword = document.getElementById("newPassword");
+            newEmail = document.getElementById("newEmail");
+            firstName = document.getElementById("firstName");
+            lastName = document.getElementById("lastName");
+
+            const data = {
+                "username": newUsername.value,
+                "email": newEmail.value,
+                "enabled": true,
+                "firstName": firstName.value,
+                "lastName": lastName.value,
+                "credentials": [
+                    {
+                        "type": "password",
+                        "value": newPassword.value,
+                        "temporary": false
+                    }
+                ]
+            };
+
+            const options = {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + $("#jwt").val() },
+                body: JSON.stringify(data)
+            };
+
+            fetch("http://srvlit.local:88/auth/admin/realms/master/users", options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.status + ' ' + response.statusText);
+                    } else {
+                        return response;
+                    }
+                })
+                .then(data => {
+                    alert("Sucesso!", data)
+                })
+                .catch(error => {
+                    console.log(error)
+                });
+        }
+
+        function deleteUser() {
+            const token = $("#jwt").val();
+            const id = $("#id").val()
+
+            fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
+                method: "DELETE",
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(response);
+                }
+                return response;
+            }).then(data => {
+                alert("Deletado!")
+            }).catch(error => {
+                console.log(error)
+                alert(error);
+            });
+
+        }
     </script>
 
 </body>
