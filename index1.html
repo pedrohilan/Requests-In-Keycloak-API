@@ -45,7 +45,7 @@
     <br />
 
     <div>
-        <input type="text" name="id" id="id" />
+        <input type="text" name="id" id="id" placeholder="ID do usuário"/>
         <button onclick='deleteUser()'>Excluir Usuário</button>
         <button onclick='getUser()'>Pegar Usuário</button>
     </div>
@@ -356,27 +356,24 @@
 
         }
 
-        function getUser() {
+        async function getUser() {
             const token = $("#jwt").val();
             const id = $("#id").val();
 
-            fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
+            const response = await fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
                 method: "GET",
                 headers: { 'Authorization': `Bearer ${token}` }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(response);
-                }
-                return response.json();
-            }).then(data => {
-                $("#editUsername").val(data.username)
-                $("#editEmail").val(data.email)
-                $("#editFirstName").val(data.firstName)
-                $("#editLastName").val(data.lastName)
-            }).catch(error => {
-                console.log(error)
-                alert(error);
-            });
+            })
+            const response_data = await response.json()
+
+            if (!response.ok) {
+                alert(response_data.error)
+            }else{
+                $("#editUsername").val(response_data.username)
+                $("#editEmail").val(response_data.email)
+                $("#editFirstName").val(response_data.firstName)
+                $("#editLastName").val(response_data.lastName)
+            }
 
         }
 
