@@ -47,6 +47,7 @@
     <div>
         <input type="text" name="id" id="id" />
         <button onclick='deleteUser()'>Excluir Usuário</button>
+        <button onclick='getUser()'>Pegar Usuário</button>
     </div>
 
     <br />
@@ -73,6 +74,31 @@
             <br />
             <br />
             <button onclick='newUser()'>Criar</button>
+        </form>
+    </div>
+
+    <hr>
+    <br />
+    <br />
+
+    <div>
+        <form>
+            <input type="text" name="editUsername" id="editUsername" disabled placeholder="editUsername" />
+            <br />
+            <br />
+            <input type="email" name="editEmail" id="editEmail" placeholder="editEmail" />
+            <br />
+            <br />
+            <input type="text" name="editFirstName" id="editFirstName" placeholder="editFirstName" />
+            <br />
+            <br />
+            <input type="text" name="editLastName" id="editLastName" placeholder="editLastName" />
+            <br />
+            <br />
+            <input type="password" name="editPassword" id="editPassword" placeholder="editPassword" />
+            <br />
+            <br />
+            <button onclick='updateUser()'>Editar</button>
         </form>
     </div>
 
@@ -266,7 +292,7 @@
         function decodeJWT(token) {
             var payload = token.split('.')[1]; //pegar a segunda parte do token
             var decoded = JSON.parse(window.atob(payload)); //atob decodifica uma string base64
-            alert(decoded.preferred_username + "\n" + decoded.email)
+            alert(decoded.preferred_username + "\n" + decoded.email + "\n" + decoded.realm_access.roles + "\n" + decoded.sub)
         }
 
         function newUser() {
@@ -303,6 +329,7 @@
             fetch("http://srvlit.local:88/auth/admin/realms/master/users", options)
                 .then(response => {
                     if (!response.ok) {
+                        console.log(response.json())
                         throw new Error(response.status + ' ' + response.statusText);
                     } else {
                         return response;
@@ -332,6 +359,71 @@
                 return response;
             }).then(data => {
                 alert("Deletado!")
+            }).catch(error => {
+                console.log(error)
+                alert(error);
+            });
+
+        }
+
+        function getUser() {
+            const token = $("#jwt").val();
+            const id = $("#id").val();
+
+            fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
+                method: "GET",
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(response);
+                }
+                return response.json();
+            }).then(data => {
+                $("#editUsername").val(data.username)
+                $("#editEmail").val(data.email)
+                $("#editFirstName").val(data.firstName)
+                $("#editLastName").val(data.lastName)
+            }).catch(error => {
+                console.log(error)
+                alert(error);
+            });
+
+        }
+
+        function updateUser() {
+            event.preventDefault();
+
+            const token = $("#jwt").val();
+            const id = $("#id").val();
+
+            const data = {
+                "username": $("#editUsername").val(),
+                "email": $("#editEmail").val(),
+                "enabled": true,
+                "firstName": $("#editFirstName").val(),
+                "lastName": $("#editLastName").val(),
+                "credentials": [
+                    {
+                        "type": "password",
+                        "value": $("#editPassword").val(),
+                        "temporary": false
+                    }
+                ]
+            };
+
+            fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(response);
+                }
+                return response;
+            }).then(data => {
+                alert("Editado!")
+                getUser();
+
             }).catch(error => {
                 console.log(error)
                 alert(error);
