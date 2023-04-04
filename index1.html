@@ -295,7 +295,7 @@
             alert(decoded.preferred_username + "\n" + decoded.email + "\n" + decoded.realm_access.roles + "\n" + decoded.sub)
         }
 
-        function newUser() {
+        async function newUser() {
 
             event.preventDefault();
 
@@ -326,43 +326,33 @@
                 body: JSON.stringify(data)
             };
 
-            fetch("http://srvlit.local:88/auth/admin/realms/master/users", options)
-                .then(response => {
-                    if (!response.ok) {
-                        console.log(response.json())
-                        throw new Error(response.status + ' ' + response.statusText);
-                    } else {
-                        return response;
-                    }
-                })
-                .then(data => {
-                    alert("Sucesso!", data)
-                })
-                .catch(error => {
-                    console.log(error)
-                });
+            const response = await fetch("http://srvlit.local:88/auth/admin/realms/master/users", options)
+
+            if (!response.ok) {
+                const response_data = await response.json()
+                alert(response_data.errorMessage)
+            }else{
+                alert('OK!')
+            }
         }
 
-        function deleteUser() {
+        async function deleteUser() {
             const token = $("#jwt").val();
             const id = $("#id").val()
 
-            fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
+            const response = await fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
                 method: "DELETE",
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(response);
-                }
-                return response;
-            }).then(data => {
-                alert("Deletado!")
-            }).catch(error => {
-                console.log(error)
-                alert(error);
-            });
+            })
+
+            if (!response.ok) {
+                const response_data = await response.json()
+                alert(response_data.error)
+            }else{
+                alert('OK!')
+            }
 
         }
 
@@ -390,7 +380,7 @@
 
         }
 
-        function updateUser() {
+        async function updateUser() {
             event.preventDefault();
 
             const token = $("#jwt").val();
@@ -411,23 +401,18 @@
                 ]
             };
 
-            fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
+            const response = await fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(data)
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(response.status + ' ' + response.statusText);
-                }
-                return response;
-            }).then(data => {
-                alert("Editado!")
-                getUser();
+            })
 
-            }).catch(error => {
-                console.log(error)
-                alert(error);
-            });
+            if (!response.ok) {
+                const response_data = await response.json()
+                alert(response_data.errorMessage)
+            }else{
+                alert('OK!')
+            }
 
         }
     </script>
