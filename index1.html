@@ -45,9 +45,13 @@
     <br />
 
     <div>
-        <input type="text" name="id" id="id" placeholder="ID do usuário"/>
+        <input type="text" name="id" id="id" placeholder="ID do usuário" />
         <button onclick='deleteUser()'>Excluir Usuário</button>
         <button onclick='getUser()'>Pegar Usuário</button>
+    </div>
+    <div>
+        <input type="text" name="usernameSearch" id="usernameSearch" placeholder="Nome do usuário" />
+        <button onclick='getUserbyUsername()'>Pegar Usuário</button>
     </div>
 
     <br />
@@ -237,6 +241,9 @@
         }
 
         function renewToken() {
+
+            getToken();
+
             const data = {
                 grant_type: 'refresh_token',
                 client_id: "teste-springboot",
@@ -331,7 +338,7 @@
             if (!response.ok) {
                 const response_data = await response.json()
                 alert(response_data.errorMessage)
-            }else{
+            } else {
                 alert('OK!')
             }
         }
@@ -350,7 +357,7 @@
             if (!response.ok) {
                 const response_data = await response.json()
                 alert(response_data.error)
-            }else{
+            } else {
                 alert('OK!')
             }
 
@@ -358,9 +365,8 @@
 
         async function getUser() {
             const token = $("#jwt").val();
-            const id = $("#id").val();
 
-            const response = await fetch('http://srvlit.local:88/auth/admin/realms/master/users/' + id, {
+            const response = await fetch('http://srvlit.local:88/auth/realms/master/protocol/openid-connect/userinfo', {
                 method: "GET",
                 headers: { 'Authorization': `Bearer ${token}` }
             })
@@ -368,11 +374,38 @@
 
             if (!response.ok) {
                 alert(response_data.error)
-            }else{
-                $("#editUsername").val(response_data.username)
+            } else {
+                $("#id").val(response_data.sub)
+                $("#editUsername").val(response_data.preferred_username)
                 $("#editEmail").val(response_data.email)
-                $("#editFirstName").val(response_data.firstName)
-                $("#editLastName").val(response_data.lastName)
+                $("#editFirstName").val(response_data.given_name)
+                $("#editLastName").val(response_data.family_name)
+            }
+
+        }
+
+        async function getUserbyUsername() {
+            const token = $("#jwt").val();
+            const name = $("#usernameSearch").val();
+
+            const response = await fetch('http://srvlit.local:88/auth/admin/realms/master/users/?username=' + name, {
+                method: "GET",
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const response_data = await response.json()
+
+            if (!response.ok) {
+                alert(response_data.error)
+            } else {
+                if (response_data[0].firstName) {
+                    $("#id").val(response_data[0].sub)
+                    $("#editUsername").val(response_data[0].username)
+                    $("#editEmail").val(response_data[0].email)
+                    $("#editFirstName").val(response_data[0].firstName)
+                    $("#editLastName").val(response_data[0].lastName)
+                }else{
+                    alert('Digite o nome correto!')
+                }
             }
 
         }
@@ -407,7 +440,7 @@
             if (!response.ok) {
                 const response_data = await response.json()
                 alert(response_data.errorMessage)
-            }else{
+            } else {
                 alert('OK!')
             }
 
