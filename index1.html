@@ -33,6 +33,9 @@
         <button onclick='validadeToken()'>Validar Token</button>
         <br />
         <br />
+        <button onclick='getUser()'>Pegar Usuário do Token</button>
+        <br />
+        <br />
         <button onclick='logout()'>Sair</button>
     </div>
     <br />
@@ -47,7 +50,6 @@
     <div>
         <input type="text" name="id" id="id" placeholder="ID do usuário" />
         <button onclick='deleteUser()'>Excluir Usuário</button>
-        <button onclick='getUser()'>Pegar Usuário</button>
     </div>
     <div>
         <input type="text" name="usernameSearch" id="usernameSearch" placeholder="Nome do usuário" />
@@ -59,32 +61,6 @@
     <hr>
     <br />
     <br />
-
-    <div>
-        <form>
-            <input type="text" name="newUsername" id="newUsername" placeholder="username" />
-            <br />
-            <br />
-            <input type="email" name="newEmail" id="newEmail" placeholder="newEmail" />
-            <br />
-            <br />
-            <input type="text" name="firstName" id="firstName" placeholder="firstName" />
-            <br />
-            <br />
-            <input type="text" name="lastName" id="lastName" placeholder="lastName" />
-            <br />
-            <br />
-            <input type="password" name="newPassword" id="newPassword" placeholder="newPassword" />
-            <br />
-            <br />
-            <button onclick='newUser()'>Criar</button>
-        </form>
-    </div>
-
-    <hr>
-    <br />
-    <br />
-
     <div>
         <form>
             <input type="text" name="editUsername" id="editUsername" placeholder="editUsername" />
@@ -103,6 +79,29 @@
             <br />
             <br />
             <button onclick='updateUser()'>Editar</button>
+        </form>
+    </div>
+    <hr>
+    <br />
+    <br />
+    <div>
+        <form>
+            <input type="text" name="newUsername" id="newUsername" placeholder="username" />
+            <br />
+            <br />
+            <input type="email" name="newEmail" id="newEmail" placeholder="newEmail" />
+            <br />
+            <br />
+            <input type="text" name="firstName" id="firstName" placeholder="firstName" />
+            <br />
+            <br />
+            <input type="text" name="lastName" id="lastName" placeholder="lastName" />
+            <br />
+            <br />
+            <input type="password" name="newPassword" id="newPassword" placeholder="newPassword" />
+            <br />
+            <br />
+            <button onclick='newUser()'>Criar</button>
         </form>
     </div>
 
@@ -130,11 +129,9 @@
                     return response.text();
                 })
                 .then(data => {
-                    // do something with the data
                     alert(data);
                 })
                 .catch(error => {
-                    // handle error
                     alert(error);
                     console.log(error)
                 });
@@ -174,7 +171,6 @@
                     getToken();
                 })
                 .catch(error => {
-                    // handle error
                     if (attemps >= 10) {
                         alert('Espere 1 min até tentar de novo')
                         console.log('Espere 1 min até tentar de novo')
@@ -398,7 +394,7 @@
                 alert(response_data.error)
             } else {
                 if (response_data[0].firstName) {
-                    $("#id").val(response_data[0].sub)
+                    $("#id").val(response_data[0].id)
                     $("#editUsername").val(response_data[0].username)
                     $("#editEmail").val(response_data[0].email)
                     $("#editFirstName").val(response_data[0].firstName)
@@ -439,7 +435,10 @@
 
             if (!response.ok) {
                 const response_data = await response.json()
-                alert(response_data.errorMessage)
+                if (response_data.errorMessage != undefined)
+                    alert(response_data.errorMessage)
+                else
+                    alert(response_data.error)
             } else {
                 alert('OK!')
             }
