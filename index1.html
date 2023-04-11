@@ -19,6 +19,9 @@
             Refresh Token
             <textarea name="refresh_token" id="refresh_token" type="text" placeholder="Refresh Token"></textarea>
         </label>
+        <label>
+            <textarea name="endpoint" id="endpoint" type="text" placeholder="endpoint">students</textarea>
+        </label>
         <button onclick='requestInAPI()'>Requisição API</button>
         <br />
         <br />
@@ -115,13 +118,14 @@
         function requestInAPI() {
 
             token = document.getElementById("jwt"); //token = $("#jwt").val();
+            endpoint = document.getElementById("endpoint"); //endpoint = $("#endpoint").val();
 
             const options = {
                 method: "GET",
                 headers: { "Authorization": "Bearer " + token.value }
             };
 
-            fetch("http://localhost:8080/students", options)
+            fetch("http://localhost:8080/"+endpoint.value, options)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(response.statusText);
@@ -399,7 +403,7 @@
                     $("#editEmail").val(response_data[0].email)
                     $("#editFirstName").val(response_data[0].firstName)
                     $("#editLastName").val(response_data[0].lastName)
-                }else{
+                } else {
                     alert('Digite o nome correto!')
                 }
             }
