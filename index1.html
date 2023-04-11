@@ -44,8 +44,12 @@
     <br />
     <div>
         <a tabindex="5" target="_blank"
-            href="http://srvlit.local:88/auth/realms/master/login-actions/reset-credentials?client_id=security-admin-console&amp;tab_id=LbxEhV1hvXg">
+            href="http://srvlit.local:88/auth/realms/master/login-actions/reset-credentials">
             Esqueceu sua senha?
+        </a>
+        <br/>
+        <a tabindex="5" target="_blank" href="http://srvlit.local:88/auth/realms/master/account">
+            Gerenciar minha conta
         </a>
     </div>
     <br />
@@ -125,7 +129,7 @@
                 headers: { "Authorization": "Bearer " + token.value }
             };
 
-            fetch("http://localhost:8080/"+endpoint.value, options)
+            fetch("http://localhost:8080/" + endpoint.value, options)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(response.statusText);
