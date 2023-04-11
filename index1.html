@@ -47,7 +47,7 @@
             href="http://srvlit.local:88/auth/realms/master/login-actions/reset-credentials">
             Esqueceu sua senha?
         </a>
-        <br/>
+        <br />
         <a tabindex="5" target="_blank" href="http://srvlit.local:88/auth/realms/master/account">
             Gerenciar minha conta
         </a>
@@ -117,8 +117,6 @@
 
     <script>
 
-        var attemps = 0;
-
         function requestInAPI() {
 
             token = document.getElementById("jwt"); //token = $("#jwt").val();
@@ -146,7 +144,7 @@
 
         }
 
-        function generationToken() {
+        async function generationToken() {
 
             username = document.getElementById("username"); //$("#username").val();
             password = document.getElementById("password"); //$("#password").val();
@@ -159,34 +157,22 @@
                 client_secret: "f9z5ygCyrf85GL3li1tx6PB2aWxssp2m"
             };
 
-            const options = {
+
+            const response = await fetch('http://srvlit.local:88/auth/realms/master/protocol/openid-connect/token', {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams(data)
-            };
+            })
 
-            fetch("http://srvlit.local:88/auth/realms/master/protocol/openid-connect/token", options)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    decodeJWT(data.access_token)
-                    setToken(data.access_token, data.refresh_token)
-                    attemps = 0;
-                    getToken();
-                })
-                .catch(error => {
-                    if (attemps >= 10) {
-                        alert('Espere 1 min até tentar de novo')
-                        console.log('Espere 1 min até tentar de novo')
-                    } else {
-                        console.log(attemps + 1, ' tentativas')
-                    }
-                    attemps++;
-                });
+            const response_data = await response.json()
+
+            if (!response.ok) {
+                alert(response_data.error_description)
+            } else {
+                decodeJWT(response_data.access_token)
+                setToken(response_data.access_token, response_data.refresh_token)
+                getToken();
+            }
 
         }
 
